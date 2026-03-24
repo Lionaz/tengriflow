@@ -1,184 +1,246 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tengri Flow | Bilgelik Akışı</title>
+    <title>Tengri Flow | Göklerin Sesi</title>
     <!-- Frameworks -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-deep: #020617;
-            --accent-sky: #0ea5e9;
-            --glass-white: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --tg-blue: #0ea5e9;
+            --tg-dark: #020617;
+            --tg-border: rgba(255, 255, 255, 0.08);
         }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-deep);
-            background-image: 
-                radial-gradient(circle at 50% -20%, #0c4a6e 0%, transparent 50%),
-                radial-gradient(circle at 0% 100%, #082f49 0%, transparent 30%);
-            background-attachment: fixed;
+            background-color: var(--tg-dark);
             color: #f8fafc;
-            min-height: 100vh;
+            margin: 0;
+            background-image: radial-gradient(circle at top right, #0c4a6e, transparent 40%);
+            background-attachment: fixed;
+            overflow-x: hidden;
         }
 
-        .glass-card {
-            background: var(--glass-white);
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 2rem;
+            border-bottom: 1px solid var(--tg-border);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-            box-shadow: 0 10px 20px -10px rgba(14, 165, 233, 0.5);
-            transition: transform 0.2s;
+        .post-card {
+            border-bottom: 1px solid var(--tg-border);
+            transition: background 0.2s;
         }
 
-        .btn-primary:active { transform: scale(0.95); }
-
-        .nav-blur {
-            background: rgba(2, 6, 23, 0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
+        .post-card:hover {
+            background: rgba(255, 255, 255, 0.02);
         }
+
+        .btn-tengri {
+            background: var(--tg-blue);
+            transition: all 0.2s;
+        }
+
+        .btn-tengri:hover { filter: brightness(1.1); }
+        .btn-tengri:active { transform: scale(0.96); }
 
         .hide { display: none !important; }
+
+        input, textarea {
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(14, 165, 233, 0.1);
+            border-top: 3px solid #0ea5e9;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Post Avatar Colors */
-        .avatar-bg { background: linear-gradient(45deg, #0ea5e9, #6366f1); }
+        /* Modal Animation */
+        .modal-fade { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
-<body class="pb-10">
+<body class="min-h-screen">
 
-    <!-- Notifications Area -->
-    <div id="toast-container" class="fixed top-24 right-6 z-[200] space-y-3"></div>
+    <div id="notification-area" class="fixed top-5 right-5 z-[200] space-y-2"></div>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-[100] nav-blur h-20">
-        <div class="max-w-6xl mx-auto px-6 h-full flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
-                <img src="https://r.resimlink.com/lcywxVz-5Y.png?v=fb9b68b93be119a73bae63ecfb88fd29" class="w-10 h-10 object-contain" alt="Logo">
-                <span class="text-xl font-black tracking-tighter uppercase">Tengri<span class="text-sky-500">Flow</span></span>
-            </div>
-
-            <div id="nav-auth-box">
-                <button onclick="authUI.open('login')" class="btn-primary px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white">Giriş</button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto pt-28 px-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="max-w-7xl mx-auto flex min-h-screen">
         
-        <!-- Sidebar -->
-        <aside class="hidden lg:block lg:col-span-3">
-            <div class="glass-card p-6 sticky top-28 text-center">
-                <div id="side-profile-img" class="w-20 h-20 mx-auto bg-slate-800 rounded-3xl mb-4 flex items-center justify-center text-3xl font-black text-sky-500 border border-white/5">
-                    <i class="fa-solid fa-user"></i>
+        <!-- Sol Menü -->
+        <header class="hidden md:flex flex-col w-20 xl:w-72 px-4 py-6 border-r border-white/5 sticky top-0 h-screen">
+            <div class="p-3 mb-8 cursor-pointer" onclick="location.reload()">
+                <!-- Senin Logon -->
+                <img src="https://r.resimlink.com/lcywxVz-5Y.png?v=fb9b68b93be119a73bae63ecfb88fd29" class="w-12 h-12 object-contain" alt="Logo">
+            </div>
+            
+            <nav class="flex-1 space-y-4">
+                <a href="#" class="flex items-center p-3 text-xl font-black space-x-4 text-sky-500">
+                    <i class="fa-solid fa-house"></i> <span class="hidden xl:block">Akış</span>
+                </a>
+                <a href="#" class="flex items-center p-3 text-xl space-x-4 hover:bg-white/5 rounded-full transition">
+                    <i class="fa-solid fa-hashtag"></i> <span class="hidden xl:block">Keşfet</span>
+                </a>
+                <a href="#" class="flex items-center p-3 text-xl space-x-4 hover:bg-white/5 rounded-full transition">
+                    <i class="fa-solid fa-bell"></i> <span class="hidden xl:block">Bildirimler</span>
+                </a>
+                <a href="#" class="flex items-center p-3 text-xl space-x-4 hover:bg-white/5 rounded-full transition">
+                    <i class="fa-solid fa-user"></i> <span class="hidden xl:block">Profil</span>
+                </a>
+            </nav>
+
+            <button onclick="authUI.open('register')" class="btn-tengri w-full py-4 mt-4 rounded-full font-black text-lg shadow-lg shadow-sky-500/20">
+                <i class="fa-solid fa-feather xl:hidden"></i>
+                <span class="hidden xl:block">Paylaş</span>
+            </button>
+            
+            <div id="user-display" class="mt-auto p-4 flex items-center space-x-3 hover:bg-white/5 rounded-full cursor-pointer transition">
+                <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sky-500" id="nav-avatar">?</div>
+                <div class="hidden xl:block overflow-hidden">
+                    <p class="font-bold text-sm truncate" id="nav-name">Misafir</p>
+                    <p class="text-xs text-slate-500 truncate" id="nav-handle">@ziyaretci</p>
                 </div>
-                <h3 id="side-name" class="font-bold text-lg">Ziyaretçi</h3>
-                <p id="side-handle" class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">@misafir</p>
+            </div>
+        </header>
+
+        <!-- Orta Panel -->
+        <main class="flex-1 min-h-screen border-r border-white/5 pb-20">
+            <div class="sticky top-0 z-40 glass px-6 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-black">Anasayfa</h1>
+                <div class="md:hidden">
+                    <img src="https://r.resimlink.com/lcywxVz-5Y.png?v=fb9b68b93be119a73bae63ecfb88fd29" class="w-8 h-8" alt="Logo">
+                </div>
+                <button id="main-auth-btn" onclick="authUI.open('login')" class="text-xs font-bold text-sky-500 bg-sky-500/10 px-4 py-2 rounded-full hover:bg-sky-500/20 transition">GİRİŞ YAP</button>
+            </div>
+
+            <!-- Composer -->
+            <div class="p-6 border-b border-white/5 relative" id="composer-area">
+                <!-- Overlay for guests -->
+                <div id="guest-overlay" class="absolute inset-0 z-10 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center hide">
+                    <button onclick="authUI.open('register')" class="bg-white text-black px-6 py-2 rounded-full font-black text-xs uppercase shadow-2xl">Hesap Aç ve Paylaş</button>
+                </div>
+
+                <div class="flex space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-sky-500" id="composer-avatar">T</div>
+                    <div class="flex-1">
+                        <textarea id="post-input" placeholder="Göklerin sesi ne diyor?" class="w-full text-xl mt-2 min-h-[100px] resize-none"></textarea>
+                        <div class="flex justify-between items-center pt-4 border-t border-white/5">
+                            <div class="flex space-x-4 text-sky-500 text-lg">
+                                <i class="fa-regular fa-image cursor-pointer hover:bg-sky-500/10 p-2 rounded-full transition"></i>
+                                <i class="fa-solid fa-list-ul cursor-pointer hover:bg-sky-500/10 p-2 rounded-full transition"></i>
+                                <i class="fa-regular fa-face-smile cursor-pointer hover:bg-sky-500/10 p-2 rounded-full transition"></i>
+                            </div>
+                            <button id="btn-publish" class="btn-tengri px-6 py-2 rounded-full font-bold text-sm">Paylaş</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feed">
+                <div class="flex flex-col items-center justify-center p-20 space-y-4">
+                    <div class="spinner"></div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Yükleniyor...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sağ Panel -->
+        <aside class="hidden lg:flex flex-col w-80 xl:w-96 p-6 space-y-6 sticky top-0 h-screen">
+            <div class="bg-slate-900/50 rounded-full px-5 py-3 flex items-center space-x-3 border border-white/5">
+                <i class="fa-solid fa-magnifying-glass text-slate-500"></i>
+                <input type="text" placeholder="Keşfet..." class="text-sm w-full">
+            </div>
+
+            <div class="bg-slate-900/50 rounded-[2rem] p-6 border border-white/5">
+                <h2 class="font-black text-xl mb-6">Gündem Başlıkları</h2>
+                <div class="space-y-6">
+                    <div class="cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Tarih · Gündem</p>
+                        <p class="font-black text-sm">#GökTanrı</p>
+                        <p class="text-xs text-slate-500">2.441 Paylaşım</p>
+                    </div>
+                    <div class="cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Kültür · Popüler</p>
+                        <p class="font-black text-sm">#Ötüken</p>
+                        <p class="text-xs text-slate-500">1.890 Paylaşım</p>
+                    </div>
+                </div>
             </div>
         </aside>
-
-        <!-- Feed -->
-        <div class="lg:col-span-6 space-y-6">
-            <!-- Composer -->
-            <div class="glass-card p-6 relative overflow-hidden">
-                <div id="lock-overlay" class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm z-20 flex flex-col items-center justify-center hide">
-                    <p class="text-xs font-bold uppercase mb-3">Paylaşmak için katıl</p>
-                    <button onclick="authUI.open('register')" class="bg-white text-black px-6 py-2 rounded-full font-black text-[10px] uppercase">KAYDOL</button>
-                </div>
-                
-                <textarea id="post-text" placeholder="Gökten bir mesaj bırak..." class="w-full bg-transparent border-none focus:ring-0 text-lg resize-none h-24 outline-none text-slate-100"></textarea>
-                <div class="flex justify-end pt-4 border-t border-white/5">
-                    <button id="post-submit" class="btn-primary px-8 py-2.5 rounded-xl font-bold text-xs uppercase text-white">Gönder</button>
-                </div>
-            </div>
-
-            <!-- Posts List -->
-            <div id="feed" class="space-y-6">
-                <div class="text-center py-20 opacity-30">
-                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-4"></i>
-                    <p class="text-xs font-bold uppercase">Yükleniyor...</p>
-                </div>
-            </div>
-        </div>
-    </main>
+    </div>
 
     <!-- Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 hide">
-        <div class="bg-slate-900 w-full max-w-sm p-8 rounded-[2.5rem] border border-white/10 relative">
-            <button onclick="authUI.close()" class="absolute top-6 right-6 text-slate-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            <h2 id="m-title" class="text-2xl font-black text-center mb-8 uppercase">Giriş Yap</h2>
+    <div id="auth-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 hide">
+        <div class="bg-slate-900 w-full max-w-md p-10 rounded-[2.5rem] border border-white/10 relative modal-fade">
+            <button onclick="authUI.close()" class="absolute top-8 right-8 text-slate-500 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
             
+            <div class="text-center mb-10">
+                <img src="https://r.resimlink.com/lcywxVz-5Y.png?v=fb9b68b93be119a73bae63ecfb88fd29" class="w-16 h-16 mx-auto mb-4" alt="Logo">
+                <h2 id="modal-title" class="text-2xl font-black uppercase tracking-tight">Giriş Yap</h2>
+                <p id="modal-desc" class="text-slate-500 text-sm mt-1">Göklerin akışına kaldığın yerden devam et.</p>
+            </div>
+
             <div class="space-y-4">
-                <div id="m-reg-fields" class="hide space-y-4">
-                    <input type="text" id="m-name" placeholder="Ad Soyad" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-sm focus:border-sky-500">
-                    <input type="text" id="m-handle" placeholder="Kullanıcı Adı" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-sm focus:border-sky-500">
+                <div id="register-only-fields" class="hide space-y-4">
+                    <input type="text" id="reg-name" placeholder="Ad Soyad" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-sky-500 transition outline-none">
+                    <input type="text" id="reg-handle" placeholder="Kullanıcı Adı" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-sky-500 transition outline-none">
                 </div>
-                <input type="email" id="m-email" placeholder="E-posta" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-sm focus:border-sky-500">
-                <input type="password" id="m-pass" placeholder="Şifre" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none text-sm focus:border-sky-500">
-                <button id="m-submit" class="w-full btn-primary py-4 rounded-2xl font-bold text-white uppercase">Devam Et</button>
-                <p class="text-center text-xs text-slate-500 mt-4">
-                    <span id="m-switch-text">Hesabın yok mu?</span>
-                    <button onclick="authUI.toggle()" id="m-switch-btn" class="text-sky-400 font-bold ml-1">Kayıt Ol</button>
+                <input type="email" id="auth-email" placeholder="E-posta" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-sky-500 transition outline-none">
+                <input type="password" id="auth-pass" placeholder="Şifre" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:border-sky-500 transition outline-none">
+                
+                <button id="btn-auth-action" class="btn-tengri w-full py-4 rounded-2xl font-black text-lg uppercase shadow-xl shadow-sky-500/20">Devam Et</button>
+                
+                <p class="text-center text-xs text-slate-500 pt-2">
+                    <span id="switch-text">Hesabınız yok mu?</span>
+                    <button onclick="authUI.toggle()" id="btn-switch" class="text-sky-500 font-bold ml-1 hover:underline">Kaydolun</button>
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDoc, setDoc, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-        // CRITICAL: CONFIG FIX
-        let firebaseConfig;
-        try {
-            firebaseConfig = JSON.parse(__firebase_config);
-        } catch (e) {
-            // Buraya kendi Firebase Console'undaki config nesnesini yapıştırabilirsin eğer hata alırsan.
-            firebaseConfig = {}; 
-            console.error("Firebase Config Bulunamadı! Lütfen Cloudflare/Environment ayarlarını kontrol et.");
-        }
+        // CONFIG & INIT
+        const appId = "tengri-flow-v5-final";
+        let config;
+        try { config = JSON.parse(__firebase_config); } catch(e) { config = null; }
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tengri-flow-v3';
-        
-        // App Init
-        let app, auth, db;
-        if (firebaseConfig.apiKey) {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } else {
-            document.body.innerHTML = "<div class='flex items-center justify-center h-screen text-center p-10'><div class='glass-card p-10'><h1 class='text-2xl font-bold text-rose-500 mb-4'>Firebase Config Hatası!</h1><p class='text-slate-400'>Lütfen projenin ortam değişkenlerini (Environment Variables) Cloudflare veya sistem üzerinden doğru girdiğinden emin ol.</p></div></div>";
-        }
-
+        let auth, db;
         let userState = { uid: null, profile: null, mode: 'login' };
 
-        // UI Handlers
-        window.ui = {
-            toast: (m, type='success') => {
-                const c = document.getElementById('toast-container');
-                const t = document.createElement('div');
-                t.className = `p-4 rounded-2xl shadow-xl font-bold text-xs text-white ${type==='success'?'bg-sky-600':'bg-rose-600'} transition-all duration-300`;
-                t.innerText = m;
-                c.appendChild(t);
-                setTimeout(() => t.remove(), 3000);
-            }
+        // UI Feedback
+        const notify = (msg, type = 'success') => {
+            const area = document.getElementById('notification-area');
+            const el = document.createElement('div');
+            el.className = `px-6 py-3 rounded-xl font-bold text-sm shadow-2xl transition-all duration-300 transform translate-x-full ${type === 'success' ? 'bg-sky-600 text-white' : 'bg-rose-600 text-white'}`;
+            el.innerText = msg;
+            area.appendChild(el);
+            setTimeout(() => el.classList.remove('translate-x-full'), 10);
+            setTimeout(() => {
+                el.classList.add('translate-x-full');
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
         };
 
+        // Auth UI Logic
         window.authUI = {
-            open: (mode) => {
+            open: (mode = 'login') => {
                 userState.mode = mode;
                 document.getElementById('auth-modal').classList.remove('hide');
                 authUI.sync();
@@ -190,120 +252,135 @@
             },
             sync: () => {
                 const isL = userState.mode === 'login';
-                document.getElementById('m-title').innerText = isL ? 'Giriş Yap' : 'Kayıt Ol';
-                document.getElementById('m-reg-fields').classList[isL ? 'add':'remove']('hide');
-                document.getElementById('m-switch-text').innerText = isL ? 'Hesabın yok mu?' : 'Üye misin?';
-                document.getElementById('m-switch-btn').innerText = isL ? 'Kayıt Ol' : 'Giriş Yap';
+                document.getElementById('modal-title').innerText = isL ? "Giriş Yap" : "Kayıt Ol";
+                document.getElementById('modal-desc').innerText = isL ? "Göklerin akışına kaldığın yerden devam et." : "Kendi bilgeliğini paylaşmak için aramıza katıl.";
+                document.getElementById('register-only-fields').classList[isL ? 'add' : 'remove']('hide');
+                document.getElementById('switch-text').innerText = isL ? "Hesabınız yok mu?" : "Zaten üye misiniz?";
+                document.getElementById('btn-switch').innerText = isL ? "Kaydolun" : "Giriş yapın";
             }
         };
 
-        // Auth Logic
-        onAuthStateChanged(auth, async (u) => {
-            const navBox = document.getElementById('nav-auth-box');
-            const sideName = document.getElementById('side-name');
-            const sideHandle = document.getElementById('side-handle');
-            const lock = document.getElementById('lock-overlay');
+        // Firebase Setup
+        if (config && config.apiKey) {
+            const app = initializeApp(config);
+            auth = getAuth(app);
+            db = getFirestore(app);
 
-            if (u) {
-                userState.uid = u.uid;
-                const d = await getDoc(doc(db, 'artifacts', appId, 'users', u.uid, 'profile', 'info'));
-                userState.profile = d.exists() ? d.data() : { name: "Bilge", handle: "user" };
-                
-                navBox.innerHTML = `<button id="logout" class="text-slate-500 hover:text-rose-500 font-bold text-[10px] uppercase">Çıkış</button>`;
-                document.getElementById('logout').onclick = () => signOut(auth);
-                
-                sideName.innerText = userState.profile.name;
-                sideHandle.innerText = `@${userState.profile.handle}`;
-                lock.classList.add('hide');
-            } else {
-                userState.uid = null;
-                navBox.innerHTML = `<button onclick="authUI.open('login')" class="btn-primary px-6 py-2.5 rounded-xl text-xs font-bold uppercase text-white">Giriş</button>`;
-                sideName.innerText = "Ziyaretçi";
-                sideHandle.innerText = "@misafir";
-                lock.classList.remove('hide');
-            }
-        });
+            onAuthStateChanged(auth, async (u) => {
+                const navName = document.getElementById('nav-name');
+                const navHandle = document.getElementById('nav-handle');
+                const navAvatar = document.getElementById('nav-avatar');
+                const mainAuthBtn = document.getElementById('main-auth-btn');
+                const guestOverlay = document.getElementById('guest-overlay');
 
-        document.getElementById('m-submit').onclick = async () => {
-            const e = document.getElementById('m-email').value;
-            const p = document.getElementById('m-pass').value;
+                if (u) {
+                    userState.uid = u.uid;
+                    const snap = await getDoc(doc(db, 'artifacts', appId, 'users', u.uid, 'profile', 'info'));
+                    userState.profile = snap.exists() ? snap.data() : { name: "Bilge", handle: "user" };
+                    
+                    navName.innerText = userState.profile.name;
+                    navHandle.innerText = `@${userState.profile.handle}`;
+                    navAvatar.innerText = userState.profile.name[0].toUpperCase();
+                    mainAuthBtn.innerText = "ÇIKIŞ YAP";
+                    mainAuthBtn.onclick = () => signOut(auth);
+                    guestOverlay.classList.add('hide');
+                } else {
+                    userState.uid = null;
+                    userState.profile = null;
+                    navName.innerText = "Misafir";
+                    navHandle.innerText = "@ziyaretci";
+                    navAvatar.innerText = "?";
+                    mainAuthBtn.innerText = "GİRİŞ YAP";
+                    mainAuthBtn.onclick = () => authUI.open('login');
+                    guestOverlay.classList.remove('hide');
+                }
+            });
+
+            // Real-time Feed
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), (snap) => {
+                const posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderFeed(posts.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+            });
+        } else {
+            // Demo Mode
+            renderFeed([
+                { authorName: "Bumin Kağan", authorHandle: "bumin", content: "Bağlantı bekliyor... Firebase ayarlarını yapınca burası canlanacak!", likes: [1,2], comments: 0 }
+            ]);
+            document.getElementById('guest-overlay').classList.remove('hide');
+        }
+
+        // Actions
+        document.getElementById('btn-auth-action').onclick = async () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            
+            if(!email || !pass) return notify("Alanları doldur kanka!", "error");
+
             try {
                 if (userState.mode === 'register') {
-                    const n = document.getElementById('m-name').value;
-                    const h = document.getElementById('m-handle').value.toLowerCase().trim();
-                    const r = await createUserWithEmailAndPassword(auth, e, p);
-                    await setDoc(doc(db, 'artifacts', appId, 'users', r.user.uid, 'profile', 'info'), { name: n, handle: h, uid: r.user.uid });
+                    const name = document.getElementById('reg-name').value;
+                    const handle = document.getElementById('reg-handle').value.trim().toLowerCase();
+                    if(!name || !handle) return notify("İsim ve kullanıcı adı şart!", "error");
+                    
+                    const res = await createUserWithEmailAndPassword(auth, email, pass);
+                    await setDoc(doc(db, 'artifacts', appId, 'users', res.user.uid, 'profile', 'info'), {
+                        uid: res.user.uid, name, handle, createdAt: serverTimestamp()
+                    });
+                    notify("Göklerin arasına hoş geldin!");
                 } else {
-                    await signInWithEmailAndPassword(auth, e, p);
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    notify("Giriş başarılı!");
                 }
                 authUI.close();
-                ui.toast("Başarıyla girildi!");
-            } catch (err) { ui.toast(err.message, 'error'); }
+            } catch (e) { notify(e.message, "error"); }
         };
 
-        // Post Operations
-        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), (s) => {
-            const posts = s.docs.map(d => ({ id: d.id, ...d.data() }));
-            render(posts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
-        });
+        document.getElementById('btn-publish').onclick = async () => {
+            if (!userState.uid) return authUI.open('register');
+            const txt = document.getElementById('post-input').value;
+            if (!txt.trim()) return;
 
-        document.getElementById('post-submit').onclick = async () => {
-            const txt = document.getElementById('post-text').value;
-            if (!userState.uid || !txt.trim()) return;
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), {
-                authorId: userState.uid,
-                authorName: userState.profile.name,
-                authorHandle: userState.profile.handle,
-                content: txt,
-                likes: [],
-                comments: [],
-                createdAt: serverTimestamp()
-            });
-            document.getElementById('post-text').value = '';
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), {
+                    authorId: userState.uid,
+                    authorName: userState.profile.name,
+                    authorHandle: userState.profile.handle,
+                    content: txt,
+                    likes: [],
+                    comments: 0,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('post-input').value = '';
+                notify("Sesin göklere ulaştı!");
+            } catch (e) { notify("Bir hata oluştu!", "error"); }
         };
 
-        function render(data) {
-            const f = document.getElementById('feed');
-            if (data.length === 0) { f.innerHTML = `<p class="text-center opacity-20 py-10 font-bold uppercase">Akış Boş</p>`; return; }
-            
-            f.innerHTML = data.map(p => `
-                <div class="glass-card p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 avatar-bg rounded-xl flex items-center justify-center font-bold text-white uppercase">${p.authorName[0]}</div>
-                            <div>
-                                <p class="text-sm font-bold">${p.authorName}</p>
-                                <p class="text-[9px] text-slate-500 font-bold uppercase">@${p.authorHandle}</p>
-                            </div>
+        function renderFeed(posts) {
+            const feed = document.getElementById('feed');
+            if(posts.length === 0) {
+                feed.innerHTML = `<div class="p-20 text-center text-slate-500 font-bold">Henüz kimse bir şey yazmadı.</div>`;
+                return;
+            }
+            feed.innerHTML = posts.map(p => `
+                <div class="post-card p-6 flex space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-black text-sky-500 border border-white/5 uppercase">${p.authorName[0]}</div>
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="font-black hover:underline cursor-pointer">${p.authorName}</span>
+                            <span class="text-sm text-slate-500">@${p.authorHandle}</span>
                         </div>
-                        ${userState.uid === p.authorId ? `<button onclick="window.delP('${p.id}')" class="text-slate-700 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-                    </div>
-                    <p class="text-slate-200 leading-relaxed mb-6 whitespace-pre-wrap">${p.content}</p>
-                    <div class="flex items-center space-x-6 text-slate-500 pt-4 border-t border-white/5">
-                        <button onclick="window.lk('${p.id}', ${JSON.stringify(p.likes)})" class="flex items-center space-x-2 ${p.likes?.includes(userState.uid) ? 'text-rose-500':'hover:text-rose-500'}">
-                            <i class="fa-${p.likes?.includes(userState.uid)?'solid':'regular'} fa-heart"></i>
-                            <span class="text-xs font-bold">${p.likes?.length || 0}</span>
-                        </button>
-                        <button onclick="window.sh('${p.id}')" class="hover:text-sky-400"><i class="fa-solid fa-share-nodes"></i></button>
+                        <p class="text-slate-200 leading-relaxed mb-4 text-[17px] whitespace-pre-wrap">${p.content}</p>
+                        <div class="flex items-center space-x-12 text-slate-500 text-sm">
+                            <button class="flex items-center space-x-2 hover:text-rose-500 transition"><i class="fa-regular fa-heart"></i><span>${p.likes?.length || 0}</span></button>
+                            <button class="flex items-center space-x-2 hover:text-sky-500 transition"><i class="fa-regular fa-comment"></i><span>${p.comments || 0}</span></button>
+                            <button class="hover:text-emerald-500 transition"><i class="fa-solid fa-share-nodes"></i></button>
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
-
-        // Global Actions
-        window.lk = async (id, l) => {
-            if(!userState.uid) return authUI.open('login');
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', id), {
-                likes: l.includes(userState.uid) ? arrayRemove(userState.uid) : arrayUnion(userState.uid)
-            });
-        };
-        window.delP = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', id)); };
-        window.sh = (id) => {
-            const link = `https://lionaz.github.io/tengriflow/#post-${id}`;
-            const el = document.createElement('textarea'); el.value = link; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-            ui.toast("Bağlantı kopyalandı!");
-        };
     </script>
 </body>
 </html>
 
+ 
